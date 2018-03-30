@@ -13,6 +13,9 @@ const second_tld = (hostname, domain) => {
   return m && m[1] == domain;
 };
 
+const search_param = (search, name) =>
+  (search.match(new RegExp(`[/&?](${name}=[^&]+)`)) || [])[1];
+
 const amzn = ({ hostname, pathname }) => {
   if (!hostname.match(/(?:^|\.)amazon\./)) return;
   let dp = pathname.match(/\/dp\/([^\/]+)(?:$|\/)/);
@@ -26,13 +29,13 @@ const fcbk = ({ hostname, pathname, search }) => {
   if (!php) return `https://${hostname}${pathname}`;
   switch (php) {
     case "profile":
-      let [, id] = search.match(/[\/&?](id=[^&]+)/) || [];
+      let id = search_param(search, 'id');
       if (id) return `https://${hostname}${pathname}?${id}`;
       break;
     case "photo":
-      let [, fbid] = search.match(/[\/&?](fbid=[^&]+)/) || [];
+      let fbid = search_param(search, 'fbid');
       if (!fbid) return;
-      let [, set] = search.match(/[\/&?](set=[^&]+)/) || [];
+      let set = search_param(search, 'set');
       let q = [fbid, set].filter(i => i).join("&").replace(/^(?=.)/, "?");
       return `https://${hostname}${pathname}${q}`;
   }
